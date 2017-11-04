@@ -38,4 +38,4 @@ Simple create a Facebook Login module in your theme and include it anywhere. It 
 
 ## Attributions
 
-This bundle uses some principles provided and originally used by [Kamil Kuzminski](https://github.com/qzminski).
+This bundle uses code provided and originally used by [Kamil Kuzminski](https://github.com/qzminski).
