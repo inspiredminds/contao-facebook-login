@@ -36,6 +36,6 @@ After creating the Facebook App, you need to set the Facebook App ID and Faceboo
 
 Simple create a Facebook Login module in your theme and include it anywhere. It works and behaves the same as the regular login module of Contao and also offers the same settings, plus the ability to define the member groups a newly registered user will belong to.
 
-### Attributions
+## Attributions
 
 This bundle uses some principles provided and originally used by [Kamil Kuzminski](https://github.com/qzminski).
