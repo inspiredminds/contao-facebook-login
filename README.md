@@ -28,6 +28,8 @@ Then you need to configure the _Facebook Login_ on the left side under _PRODUCTS
 
 ![Facebook Login settings](https://github.com/inspiredminds/contao-facebook-login/raw/master/facebook-login-settings.png)
 
+Then make your App public under _App Review_.
+
 ### Contao configuration
 
 After creating the Facebook App, you need to set the Facebook App ID and Facebook App Secret. You can define these either in the website root or in the system settings. Use the former if you are using a multidomain setup.
