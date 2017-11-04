@@ -12,4 +12,4 @@
  */
 
 
-$GLOBALS['TL_LANG']['MSC']['facebookLogin'] = 'Mit Facebook einloggen';
+$GLOBALS['TL_LANG']['MSC']['facebookLogin'] = 'Anmelden mit Facebook';
