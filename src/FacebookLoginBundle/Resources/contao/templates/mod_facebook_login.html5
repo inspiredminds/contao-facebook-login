@@ -1,0 +1,30 @@
+<?php $this->class .= ($this->logout ? ' logout' : ' login'); ?>
+
+<?php $this->extend('block_unsearchable'); ?>
+
+<?php $this->block('content'); ?>
+
+  <form<?php if ($this->action): ?> action="<?= $this->action ?>"<?php endif; ?> id="<?= $this->formId ?>" method="post">
+    <div class="formbody">
+      <?php if ($this->message): ?>
+        <p class="error"><?= $this->message ?></p>
+      <?php endif; ?>
+      <?php if ($this->logout): ?>
+        <p class="login_info"><?= $this->loggedInAs ?><br><?= $this->lastLogin ?></p>
+      <?php endif; ?>
+      <input type="hidden" name="FORM_SUBMIT" value="<?= $this->formId ?>">
+      <input type="hidden" name="REQUEST_TOKEN" value="{{request_token}}">
+      <div class="widget widget-submit">
+        <button type="submit" class="submit"><?= $this->slabel ?></button>
+      </div>
+      <?php if (!$this->logout && $this->autologin): ?>
+        <div class="widget widget-checkbox">
+          <fieldset class="checkbox_container">
+            <span><input type="checkbox" name="autologin" id="autologin" value="1" class="checkbox"> <label for="autologin"><?= $this->autoLabel ?></label></span>
+          </fieldset>
+        </div>
+      <?php endif; ?>
+    </div>
+  </form>
+
+<?php $this->endblock(); ?>

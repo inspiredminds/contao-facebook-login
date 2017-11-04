@@ -1,0 +1,38 @@
+{
+	"name":"inspiredminds/contao-facebook-login",
+	"description":"Contao 4 bundle for a Facebook login.",
+	"keywords":["contao", "facebook", "login"],
+	"type":"contao-bundle",
+	"homepage":"http://www.inspiredminds.at",
+	"license":"LGPL-3.0+",
+	"authors":[
+		{
+			"name":"Fritz Michael Gschwantner",
+			"homepage":"http://www.inspiredminds.at",
+			"email":"fmg@inspiredminds.at",
+			"role":"Developer"
+		}
+	],
+	"support":{
+		"email":"fmg@inspiredminds.at",
+		"issues":"https://github.com/inspiredminds/contao-facebook-login/issues",
+		"source":"https://github.com/inspiredminds/contao-facebook-login",
+		"forum":"https://community.contao.org/de"
+	},
+	"require":{
+		"contao/core-bundle": "^4.4",
+        "facebook/graph-sdk": "^5.6",
+        "fritzmg/contao-facebook-js-sdk": "^3.1"
+	},
+	"require-dev": {
+		 "contao/manager-plugin": "^2.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"": "src/"
+		}
+	},
+	"extra": {
+		"contao-manager-plugin": "FacebookLoginBundle\\ContaoManagerPlugin"
+	}
+}
