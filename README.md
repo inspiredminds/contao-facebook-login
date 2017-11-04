@@ -14,3 +14,24 @@ The execute the Contao Install Tool. If you use the Contao Standard Edition, you
 new FacebookLoginBundle\FacebookLoginBundle()
 ```
 to your `AppKernel.php`.
+
+## Usage instructions
+
+### Facebook App
+
+Before being able to use the Facebook login, you have to create a Facebook App for your website under [developers.facebook.com/apps](https://developers.facebook.com/apps). Make sure to fill out at least the following fields:
+
+* _Settings_ » _Basic_ » _Add Platform_ » _Website_: enter the basic URL of your site, e.g. `http://example.org`.
+* _Settings_ » _Basic_ » _App Domains_: fill in the domain of your site, e.g. `example.org`.
+
+Then you need to configure the _Facebook Login_ on the left side under _PRODUCTS_. If said product is not there, you need to add it manually via _+ Add Product_ first. Make sure to fill out _Valid OAuth URIs_ with the basic URL of your site, e.g. `http://example.org`. Set the rest of the settings as seen in the screenshot below:
+
+![Facebook Login settings](https://github.com/inspiredminds/contao-facebook-login/raw/master/facebook-login-settings.png)
+
+### Contao configuration
+
+After creating the Facebook App, you need to set the Facebook App ID and Facebook App Secret. You can define these either in the website root or in the system settings. Use the former if you are using a multidomain setup.
+
+### Facebook Login module
+
+After the previous steps you can now create a Facebook Login module in your theme. It offers the same settings as the regular login module.
