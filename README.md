@@ -1,3 +1,7 @@
+[![](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/inspiredminds/contao-facebook-login)
+[![](https://img.shields.io/packagist/v/inspiredminds/contao-facebook-login.svg)](https://packagist.org/packages/inspiredminds/contao-facebook-login)
+[![](https://img.shields.io/packagist/dt/inspiredminds/contao-facebook-login.svg)](https://packagist.org/packages/inspiredminds/contao-facebook-login)
+
 Contao Facebook Login
 =====================
 
