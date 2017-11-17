@@ -34,17 +34,32 @@ use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategy;
 
 /**
  * This controller handles the login response from Facebook
+ *
+ * @author Fritz Michael Gschwantner <https://github.com/fritzmg>
+ *
+ * @Route(defaults={"_scope" = "frontend", "_token_check" = true})
  */
 class CallbackController extends Controller
 {
     /**
-     * @Route("/fblogincallback/{module}", name="fblogincallback")
+     * @Route("/fblogincallback/{module}/{page}", name="fblogincallback")
      * @return RedirectResponse
      */
-    public function fblogincallbackAction(Request $request, $module)
+    public function fblogincallbackAction(Request $request, $module, $page)
     {
         // initialize the Contao framework
         $this->get('contao.framework')->initialize();
+
+        // load the global page object
+        global $objPage;
+        $objPage = PageModel::findWithDetails($page);
+
+        // check for valid page
+        if (null === $objPage)
+        {
+            System::log('Invalid referring page given for Facebook login.', __METHOD__, TL_ERROR);
+            return $this->getDefaultRedirect();
+        }
 
         // check for valid Facebook App config
         if (!\FacebookJSSDK::hasValidConfig())

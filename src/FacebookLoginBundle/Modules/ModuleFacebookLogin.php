@@ -70,7 +70,6 @@ class ModuleFacebookLogin extends Module
 		if (!$_POST && $this->redirectBack && ($strReferer = System::getReferer()) != Environment::get('request'))
 		{
 			$_SESSION['LAST_PAGE_VISITED'] = $strReferer;
-			var_dump($strReferer);
 		}
 
 		// Login
@@ -93,7 +92,8 @@ class ModuleFacebookLogin extends Module
 			$helper = $fb->getRedirectLoginHelper();
 			$permissions = ['public_profile','email'];
 			$router = System::getContainer()->get('router');
-			$callbackUrl = $router->generate('fblogincallback', ['module' => $this->id], UrlGeneratorInterface::ABSOLUTE_URL);
+			global $objPage;
+			$callbackUrl = $router->generate('fblogincallback', ['module' => $this->id, 'page' => $objPage->id], UrlGeneratorInterface::ABSOLUTE_URL);
 			$loginUrl = $helper->getLoginUrl($callbackUrl, $permissions);
 			Controller::redirect($loginUrl);
 		}
