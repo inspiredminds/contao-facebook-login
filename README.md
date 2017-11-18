@@ -18,7 +18,7 @@ If you use the Contao Standard Edition, you will have to add
 new FacebookLoginBundle\FacebookLoginBundle()
 ```
 to your `AppKernel.php`. You will also need to add the bundle's routes to your `app/config/routing.yml`:
-```
+```yaml
 FacebookLoginBundle:
     resource: "@FacebookLoginBundle/Resources/config/routing.yml"
 ```
