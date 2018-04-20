@@ -147,10 +147,12 @@ class ModuleFacebookLogin extends Module
 		{
 			$objMember = FrontendUser::getInstance();
 
+			$strName = \implode(' ', \array_filter([$objMember->firstname, $objMember->lastname])) ?: $objMember->username;
+
 			$this->Template->logout = true;
 			$this->Template->formId = 'tl_logout_' . $this->id;
 			$this->Template->slabel = StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['logout']);
-			$this->Template->loggedInAs = sprintf($GLOBALS['TL_LANG']['MSC']['loggedInAs'], $objMember->username);
+			$this->Template->loggedInAs = sprintf($GLOBALS['TL_LANG']['MSC']['loggedInAs'], $strName);
 			$this->Template->action = ampersand(Environment::get('indexFreeRequest'));
 
 			if ($objMember->lastLogin > 0)
