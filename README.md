@@ -28,11 +28,11 @@ Before being able to use the Facebook login, you have to create a Facebook App f
 * _Settings_ » _Basic_ » _Add Platform_ » _Website_: enter the basic URL of your site, e.g. `http://example.org`.
 * _Settings_ » _Basic_ » _App Domains_: fill in the domain of your site, e.g. `example.org`.
 
-Then you need to configure the _Facebook Login_ on the left side under _PRODUCTS_. If said product is not there, you need to add it manually via _+ Add Product_ first. Make sure to fill out _Valid OAuth URIs_ with the basic URL of your site, e.g. `http://example.org`. Set the rest of the settings as seen in the screenshot below:
+Then you need to configure the _Facebook Login_ on the left side under _PRODUCTS_. If said product is not there, you need to add it manually via _+ Add Product_ first. Make sure to fill out _Valid OAuth URIs_ with the the following URL of your site: `http://example.org/fblogincallback`. If you are using `https`, use that instead (or both). Set the rest of the settings as seen in the screenshot below:
 
 ![Facebook Login settings](https://github.com/inspiredminds/contao-facebook-login/raw/master/facebook-login-settings.png)
 
-Then make your App public under _App Review_.
+_Use Strict Mode for Redirect URIs_ can be enabled (new Facebook apps will have this enabled by default). Then make your App public under _App Review_.
 
 ### Contao configuration
 

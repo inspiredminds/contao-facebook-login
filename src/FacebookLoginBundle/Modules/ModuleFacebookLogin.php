@@ -75,10 +75,12 @@ class ModuleFacebookLogin extends Module
 		// Login
 		if (Input::post('FORM_SUBMIT') == 'tl_login_' . $this->id)
 		{
+			// Get the session
+			$session = System::getContainer()->get('session');
+
 			// Auto login
 			if (isset($_POST['autologin']) && $this->autologin)
 			{
-				$session = System::getContainer()->get('session');
 				$session->set('facebook_login_autologin', (bool)$_POST['autologin']);
 			}
 
@@ -92,9 +94,14 @@ class ModuleFacebookLogin extends Module
 			$helper = $fb->getRedirectLoginHelper();
 			$permissions = ['public_profile','email'];
 			$router = System::getContainer()->get('router');
-			global $objPage;
-			$callbackUrl = $router->generate('fblogincallback', ['module' => $this->id, 'page' => $objPage->id], UrlGeneratorInterface::ABSOLUTE_URL);
+			$callbackUrl = $router->generate('fblogincallback', [], UrlGeneratorInterface::ABSOLUTE_URL);
 			$loginUrl = $helper->getLoginUrl($callbackUrl, $permissions);
+
+			// set some session variables
+			global $objPage;
+			$session->set('facebook_login_module', $this->id);
+			$session->set('facebook_login_page', $objPage->id);
+
 			Controller::redirect($loginUrl);
 		}
 

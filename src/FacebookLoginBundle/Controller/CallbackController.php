@@ -42,29 +42,51 @@ use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategy;
 class CallbackController extends Controller
 {
     /**
-     * @Route("/fblogincallback/{module}/{page}", name="fblogincallback")
+     * @Route("/fblogincallback", name="fblogincallback")
      * @return RedirectResponse
      */
-    public function fblogincallbackAction(Request $request, $module, $page)
+    public function fblogincallbackAction(Request $request)
     {
         // initialize the Contao framework
         $this->get('contao.framework')->initialize();
-
-        // load the global page object
-        global $objPage;
-        $objPage = PageModel::findWithDetails($page);
-
-        // check for valid page
-        if (null === $objPage)
-        {
-            System::log('Invalid referring page given for Facebook login.', __METHOD__, TL_ERROR);
-            return $this->getDefaultRedirect();
-        }
 
         // check for valid Facebook App config
         if (!\FacebookJSSDK::hasValidConfig())
         {
             System::log('Facebook login callback called without valid app configuration.', __METHOD__, TL_ERROR);
+            return $this->getDefaultRedirect();
+        }
+
+        // get the session
+        $session = $this->get('session');
+
+        // check for session variables
+        if (!$session->has('facebook_login_page') || !$session->has('facebook_login_module'))
+        {
+            System::log('No session data for for page and module.', __METHOD__, TL_ERROR);
+            return $this->getDefaultRedirect();
+        }
+
+        // load the global page object
+        global $objPage;
+        $objPage = PageModel::findWithDetails($session->get('facebook_login_page'));
+        $session->remove('facebook_login_page');
+
+        // check for valid page
+        if (null === $objPage)
+        {
+            System::log('Invalid referring page.', __METHOD__, TL_ERROR);
+            return $this->getDefaultRedirect();
+        }
+
+        // get the module
+        $objModule = ModuleModel::findById($session->get('facebook_login_module'));
+        $session->remove('facebook_login_module');
+
+        // check for valid module
+        if (null === $objModule)
+        {
+            System::log('Invalid referring module.', __METHOD__, TL_ERROR);
             return $this->getDefaultRedirect();
         }
 
@@ -131,9 +153,6 @@ class CallbackController extends Controller
         {
             return $this->getDefaultRedirect();
         }
-
-        // get the module
-        $objModule = ModuleModel::findById($module);
 
         // log in the user
         $blnSuccess = $this->loginUser($user, $objModule);
