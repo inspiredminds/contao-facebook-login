@@ -45,7 +45,7 @@ After creating the Facebook App, you need to set the Facebook App ID and Faceboo
 
 ### Facebook Login module
 
-Simply create a Facebook Login module in your theme and include it anywhere. It works and behaves the same way as the regular login module of Contao and also offers the same settings, plus the ability to define the member groups newly registered users will belong to.
+Simply create a Facebook Login module in your theme and include it anywhere. It works and behaves the same way as the regular login module of Contao and also offers the same settings, plus the ability to define the member groups newly registered users will belong to and the ability to decide what personal data should be fetched from Facebook.
 
 ## Attributions
 
