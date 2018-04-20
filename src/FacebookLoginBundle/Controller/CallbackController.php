@@ -181,6 +181,9 @@ class CallbackController extends Controller
         $objMember = MemberModel::findByFacebookId($user['id']);
         if (null === $objMember)
         {
+            // create username
+            $strUsername = 'fb_'.$user['id'];
+
             // create a new user
             $objMember = new MemberModel();
             $objMember->tstamp = $time;
@@ -188,9 +191,9 @@ class CallbackController extends Controller
             $objMember->firstname = \in_array('firstname', $arrSaveData) ? $user['first_name'] . ($user['middle_name'] ? ' ' . $user['middle_name'] : '') : '';
             $objMember->lastname = \in_array('lastname', $arrSaveData) ? $user['last_name'] : '';
             $objMember->gender = \in_array('gender', $arrSaveData) ? $user['gender'] : '';
-            $objMember->email = ($user['email'] && \in_array('email', $arrSaveData)) ? $user['email'] : 'fb_'.$user['id'];
+            $objMember->email = ($user['email'] && \in_array('email', $arrSaveData)) ? $user['email'] : '';
             $objMember->login = 1;
-            $objMember->username = 'fb_'.$user['id'];
+            $objMember->username = $strUsername;
             $objMember->facebookId = $user['id'];
             $objMember->language = \in_array('locale', $arrSaveData) ? $user['locale'] : '';
             $objMember->groups = $objModule->reg_groups;
