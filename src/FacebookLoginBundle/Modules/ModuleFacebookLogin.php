@@ -79,17 +79,9 @@ class ModuleFacebookLogin extends Module
 			$this->fbLoginData = deserialize($this->fbLoginData, true);
 
 			// Prepare the facebook permissions
-			$permissions = [];
+			$permissions = ['public_profile'];
 
-			// Add basic permissions
-			foreach (['firstname', 'lastname', 'gender', 'locale'] as $data)
-			{
-				if (\in_array($data, $this->fbLoginData))
-				{
-					$permissions[] = 'public_profile';
-					break;
-				}
-			}
+			// Add email permission
 			if (\in_array('email', $this->fbLoginData))
 			{
 				$permissions[] = 'email';
