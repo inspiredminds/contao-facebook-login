@@ -174,6 +174,9 @@ class CallbackController extends Controller
         $time    = time();
         $db      = $this->get('database_connection');
 
+        // get the data to be saved
+        $arrSaveData = deserialize($objModule->fbLoginData, true);
+
         // check if users exists
         $objMember = MemberModel::findByFacebookId($user['id']);
         if (null === $objMember)
@@ -182,14 +185,14 @@ class CallbackController extends Controller
             $objMember = new MemberModel();
             $objMember->tstamp = $time;
             $objMember->dateAdded = $time;
-            $objMember->firstname = $user['first_name'] . ($user['middle_name'] ? ' ' . $user['middle_name'] : '');
-            $objMember->lastname = $user['last_name'];
-            $objMember->gender = $user['gender'];
-            $objMember->email = $user['email'] ?: 'fb_'.$user['id'];
+            $objMember->firstname = \in_array('firstname', $arrSaveData) ? $user['first_name'] . ($user['middle_name'] ? ' ' . $user['middle_name'] : '') : '';
+            $objMember->lastname = \in_array('lastname', $arrSaveData) ? $user['last_name'] : '';
+            $objMember->gender = \in_array('gender', $arrSaveData) ? $user['gender'] : '';
+            $objMember->email = ($user['email'] && \in_array('email', $arrSaveData)) ? $user['email'] : 'fb_'.$user['id'];
             $objMember->login = 1;
             $objMember->username = 'fb_'.$user['id'];
             $objMember->facebookId = $user['id'];
-            $objMember->language = $user['locale'];
+            $objMember->language = \in_array('locale', $arrSaveData) ? $user['locale'] : '';
             $objMember->groups = $objModule->reg_groups;
             $objMember->save();
         }

@@ -75,6 +75,29 @@ class ModuleFacebookLogin extends Module
 		// Login
 		if (Input::post('FORM_SUBMIT') == 'tl_login_' . $this->id)
 		{
+			// Get the login data to be retrieved
+			$this->fbLoginData = deserialize($this->fbLoginData, true);
+
+			// Prepare the facebook permissions
+			$permissions = [];
+
+			// Add basic permissions
+			foreach (['firstname', 'lastname', 'gender', 'locale'] as $data)
+			{
+				if (\in_array($data, $this->fbLoginData))
+				{
+					$permissions[] = 'public_profile';
+					break;
+				}
+			}
+			if (\in_array('email', $this->fbLoginData))
+			{
+				$permissions[] = 'email';
+			}
+
+			// Get the custom permissions
+			$permissions = \array_filter(\array_unique(\array_merge($permissions, StringUtil::splitCsv($this->fbLoginPerms))));
+
 			// Get the session
 			$session = System::getContainer()->get('session');
 
@@ -92,7 +115,6 @@ class ModuleFacebookLogin extends Module
 			]);
 
 			$helper = $fb->getRedirectLoginHelper();
-			$permissions = ['public_profile','email'];
 			$router = System::getContainer()->get('router');
 			$callbackUrl = $router->generate('fblogincallback', [], UrlGeneratorInterface::ABSOLUTE_URL);
 			$loginUrl = $helper->getLoginUrl($callbackUrl, $permissions);
