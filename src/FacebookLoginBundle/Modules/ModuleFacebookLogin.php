@@ -24,6 +24,7 @@ use Contao\Module;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
+use FacebookLoginBundle\Facebook\FacebookFactory;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class ModuleFacebookLogin extends Module
@@ -72,6 +73,9 @@ class ModuleFacebookLogin extends Module
 			$_SESSION['LAST_PAGE_VISITED'] = $strReferer;
 		}
 
+		// Get the session
+		$session = System::getContainer()->get('session');
+
 		// Login
 		if (Input::post('FORM_SUBMIT') == 'tl_login_' . $this->id)
 		{
@@ -90,9 +94,6 @@ class ModuleFacebookLogin extends Module
 			// Get the custom permissions
 			$permissions = \array_filter(\array_unique(\array_merge($permissions, StringUtil::splitCsv($this->fbLoginPerms))));
 
-			// Get the session
-			$session = System::getContainer()->get('session');
-
 			// Auto login
 			if (isset($_POST['autologin']) && $this->autologin)
 			{
@@ -100,11 +101,7 @@ class ModuleFacebookLogin extends Module
 			}
 
 			// get the Facebook SDK
-			$fb = new \Facebook\Facebook([
-				'app_id' => \FacebookJSSDK::getAppId(),
-				'app_secret' => \FacebookJSSDK::getAppSecret(),
-				'default_graph_version' => \FacebookJSSDK::getAppVersion(),
-			]);
+			$fb = FacebookFactory::create();
 
 			$helper = $fb->getRedirectLoginHelper();
 			$router = System::getContainer()->get('router');
@@ -122,6 +119,9 @@ class ModuleFacebookLogin extends Module
 		// Logout and redirect to the website root if the current page is protected
 		if (Input::post('FORM_SUBMIT') == 'tl_logout_' . $this->id)
 		{
+			// Remove access token
+			$session->remove('facebook_login_access_token');
+
 			/** @var PageModel $objPage */
 			global $objPage;
 

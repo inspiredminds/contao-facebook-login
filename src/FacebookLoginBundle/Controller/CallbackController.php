@@ -25,6 +25,7 @@ use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
+use FacebookLoginBundle\Facebook\FacebookFactory;
 use Facebook\GraphNodes\GraphUser;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -91,11 +92,7 @@ class CallbackController extends Controller
         }
 
         // initialize Facebook SDK
-        $fb = new \Facebook\Facebook([
-          'app_id' => \FacebookJSSDK::getAppId(),
-          'app_secret' => \FacebookJSSDK::getAppSecret(),
-          'default_graph_version' => \FacebookJSSDK::getAppVersion(),
-        ]);
+        $fb = FacebookFactory::create();
 
         $helper = $fb->getRedirectLoginHelper();
 
@@ -153,6 +150,9 @@ class CallbackController extends Controller
         {
             return $this->getDefaultRedirect();
         }
+
+        // save the access token in the session
+        $session->set('facebook_login_access_token', $accessToken->getValue());
 
         // log in the user
         $blnSuccess = $this->loginUser($user, $objModule);
