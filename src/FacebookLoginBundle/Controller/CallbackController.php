@@ -27,10 +27,10 @@ use Contao\StringUtil;
 use Contao\System;
 use FacebookLoginBundle\Facebook\FacebookFactory;
 use Facebook\GraphNodes\GraphUser;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategy;
 
 /**
