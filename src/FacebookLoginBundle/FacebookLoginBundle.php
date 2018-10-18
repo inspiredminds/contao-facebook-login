@@ -1,16 +1,14 @@
 <?php
 
-/**
+declare(strict_types=1);
+
+/*
  * This file is part of the FacebookLogin Bundle.
  *
- * (c) inspiredminds <https://github.com/inspiredminds>
+ * (c) inspiredminds
  *
- * @package   FacebookLoginBundle
- * @author    Fritz Michael Gschwantner <https://github.com/fritzmg>
- * @license   LGPL-3.0+
- * @copyright inspiredminds 2017
+ * @license LGPL-3.0-or-later
  */
-
 
 namespace FacebookLoginBundle;
 

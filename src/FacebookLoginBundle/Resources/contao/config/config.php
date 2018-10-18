@@ -7,7 +7,7 @@
  *
  * @package   FacebookLoginBundle
  * @author    Fritz Michael Gschwantner <https://github.com/fritzmg>
- * @license   LGPL-3.0+
+ * @license   LGPL-3.0-or-later
  * @copyright inspiredminds 2017
  */
 

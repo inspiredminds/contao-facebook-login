@@ -1,0 +1,18 @@
+services:
+
+  _instanceof:
+    Contao\CoreBundle\Framework\FrameworkAwareInterface:
+      calls:
+        - ["setFramework", ["@contao.framework"]]
+
+  facebook_login.controller.callback:
+    class: FacebookLoginBundle\Controller\CallbackController
+    public: true
+    arguments:
+      - '@contao.security.frontend_user_provider'
+      - '@security.token_storage'
+      - '@contao.routing.url_generator'
+      - '@event_dispatcher'
+      - '@session'
+      - '%kernel.environment%'
+      - '@contao.security.user_checker'

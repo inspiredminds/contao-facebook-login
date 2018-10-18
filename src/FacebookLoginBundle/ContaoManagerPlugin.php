@@ -1,16 +1,14 @@
 <?php
 
-/**
+declare(strict_types=1);
+
+/*
  * This file is part of the FacebookLogin Bundle.
  *
- * (c) inspiredminds <https://github.com/inspiredminds>
+ * (c) inspiredminds
  *
- * @package   FacebookLoginBundle
- * @author    Fritz Michael Gschwantner <https://github.com/fritzmg>
- * @license   LGPL-3.0+
- * @copyright inspiredminds 2017
+ * @license LGPL-3.0-or-later
  */
-
 
 namespace FacebookLoginBundle;
 
@@ -20,11 +18,9 @@ use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
 use Contao\ManagerPlugin\Routing\RoutingPluginInterface;
 use Symfony\Component\Config\Loader\LoaderResolverInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Plugin for the Contao Manager.
- * @author Fritz Michael Gschwantner <fmg@inspiredminds.at>
  */
 class ContaoManagerPlugin implements BundlePluginInterface, RoutingPluginInterface
 {

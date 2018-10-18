@@ -7,7 +7,7 @@
  *
  * @package   FacebookLoginBundle
  * @author    Fritz Michael Gschwantner <https://github.com/fritzmg>
- * @license   LGPL-3.0+
+ * @license   LGPL-3.0-or-later
  * @copyright inspiredminds 2017
  */
 
@@ -16,7 +16,7 @@ use Contao\StringUtil;
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = $GLOBALS['TL_DCA']['tl_module']['palettes']['login'];
 $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = str_replace('{redirect_legend', '{account_legend},reg_groups;{redirect_legend', $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login']);
-$GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = str_replace(',autologin', ',autologin,fbLoginData,fbLoginPerms', $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login']);
+$GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = str_replace(',autologin', ',fbLoginData,fbLoginPerms', $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login']);
 $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = str_replace(',cols,', ',', $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login']);
 
 

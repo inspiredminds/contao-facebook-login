@@ -1,3 +1,6 @@
-contao_facebook_login:
-    resource: "@FacebookLoginBundle/Controller"
-    type: annotation
+facebook_login.controller.callback:
+  path: /fblogincallback
+  defaults:
+    _scope: frontend
+    _token_check: false
+    _controller: facebook_login.controller.callback::fblogincallback

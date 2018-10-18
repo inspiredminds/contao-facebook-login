@@ -1,93 +1,115 @@
 <?php
 
-/**
+declare(strict_types=1);
+
+/*
  * This file is part of the FacebookLogin Bundle.
  *
- * (c) inspiredminds <https://github.com/inspiredminds>
+ * (c) inspiredminds
  *
- * @package   FacebookLoginBundle
- * @author    Fritz Michael Gschwantner <https://github.com/fritzmg>
- * @license   LGPL-3.0+
- * @copyright inspiredminds 2017
+ * @license LGPL-3.0-or-later
  */
-
 
 namespace FacebookLoginBundle\Controller;
 
-use Contao\Config;
-use Contao\Date;
-use Contao\Environment;
+use Contao\CoreBundle\Framework\FrameworkAwareInterface;
+use Contao\CoreBundle\Framework\FrameworkAwareTrait;
+use Contao\CoreBundle\Routing\UrlGenerator;
+use Contao\CoreBundle\Security\User\UserChecker;
 use Contao\FrontendUser;
 use Contao\MemberGroupModel;
 use Contao\MemberModel;
-use Contao\Message;
 use Contao\ModuleModel;
 use Contao\PageModel;
-use Contao\StringUtil;
 use Contao\System;
-use FacebookLoginBundle\Facebook\FacebookFactory;
 use Facebook\GraphNodes\GraphUser;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use FacebookLoginBundle\Facebook\FacebookFactory;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategy;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 
 /**
- * This controller handles the login response from Facebook
- *
- * @author Fritz Michael Gschwantner <https://github.com/fritzmg>
- *
- * @Route(defaults={"_scope" = "frontend", "_token_check" = true})
+ * This controller handles the login response from Facebook.
  */
-class CallbackController extends Controller
+class CallbackController implements FrameworkAwareInterface
 {
-    /**
-     * @Route("/fblogincallback", name="fblogincallback")
-     * @return RedirectResponse
-     */
-    public function fblogincallbackAction(Request $request)
+    use FrameworkAwareTrait;
+
+    protected $userProvider;
+    protected $tokenStorage;
+    protected $router;
+    protected $dispatcher;
+    protected $session;
+    protected $request;
+    protected $environment;
+    protected $userChecker;
+
+    public function __construct(
+        UserProviderInterface $userProvider,
+        TokenStorageInterface $tokenStorage,
+        UrlGenerator $router,
+        EventDispatcherInterface $dispatcher,
+        Session $session,
+        string $environment,
+        UserChecker $userChecker
+    ) {
+        $this->userProvider = $userProvider;
+        $this->tokenStorage = $tokenStorage;
+        $this->router = $router;
+        $this->dispatcher = $dispatcher;
+        $this->session = $session;
+        $this->environment = $environment;
+        $this->userChecker = $userChecker;
+    }
+
+    public function fblogincallback(Request $request): RedirectResponse
     {
+        // save the request
+        $this->request = $request;
+
         // initialize the Contao framework
-        $this->get('contao.framework')->initialize();
-
-        // check for valid Facebook App config
-        if (!\FacebookJSSDK::hasValidConfig())
-        {
-            System::log('Facebook login callback called without valid app configuration.', __METHOD__, TL_ERROR);
-            return $this->getDefaultRedirect();
-        }
-
-        // get the session
-        $session = $this->get('session');
+        $this->framework->initialize();
 
         // check for session variables
-        if (!$session->has('facebook_login_page') || !$session->has('facebook_login_module'))
-        {
-            System::log('No session data for for page and module.', __METHOD__, TL_ERROR);
+        if (!$this->session->has('facebook_login_page') || !$this->session->has('facebook_login_module')) {
+            System::log('No session data for page and module.', __METHOD__, TL_ERROR);
+
             return $this->getDefaultRedirect();
         }
 
-        // load the global page object
+        // Load the global page object.
+        // This is necessary so that FacebookJSSDK recognizes the correct App ID and App Secret.
         global $objPage;
-        $objPage = PageModel::findWithDetails($session->get('facebook_login_page'));
-        $session->remove('facebook_login_page');
+        $objPage = PageModel::findWithDetails($this->session->get('facebook_login_page'));
+        $this->session->remove('facebook_login_page');
 
         // check for valid page
-        if (null === $objPage)
-        {
+        if (null === $objPage) {
             System::log('Invalid referring page.', __METHOD__, TL_ERROR);
+
+            return $this->getDefaultRedirect();
+        }
+
+        // check for valid Facebook App config
+        if (!\FacebookJSSDK::hasValidConfig()) {
+            System::log('Facebook login callback called without valid app configuration.', __METHOD__, TL_ERROR);
+
             return $this->getDefaultRedirect();
         }
 
         // get the module
-        $objModule = ModuleModel::findById($session->get('facebook_login_module'));
-        $session->remove('facebook_login_module');
+        $module = ModuleModel::findById($this->session->get('facebook_login_module'));
+        $this->session->remove('facebook_login_module');
 
         // check for valid module
-        if (null === $objModule)
-        {
+        if (null === $module) {
             System::log('Invalid referring module.', __METHOD__, TL_ERROR);
+
             return $this->getDefaultRedirect();
         }
 
@@ -96,21 +118,17 @@ class CallbackController extends Controller
 
         $helper = $fb->getRedirectLoginHelper();
 
-        try
-        {
+        try {
             $accessToken = $helper->getAccessToken();
-        }
-        catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             System::log($e->getMessage(), __METHOD__, TL_ERROR);
+
             return $this->getDefaultRedirect();
         }
 
-        if (!isset($accessToken))
-        {
-            if ($helper->getError())
-            {
-                System::log('Facebook login error: ' . $helper->getError() . '. Code: ' . $helper->getErrorCode() . '. Reason: ' . $helper->getErrorReason() . '. Description: ' . $helper->getErrorDescription(), __METHOD__, TL_ERROR);
+        if (!isset($accessToken)) {
+            if ($helper->getError()) {
+                System::log('Facebook login error: '.$helper->getError().'. Code: '.$helper->getErrorCode().'. Reason: '.$helper->getErrorReason().'. Description: '.$helper->getErrorDescription(), __METHOD__, TL_ERROR);
             }
 
             return $this->getDefaultRedirect();
@@ -123,299 +141,141 @@ class CallbackController extends Controller
         $tokenMetadata = $oAuth2Client->debugToken($accessToken);
 
         // Validation (these will throw FacebookSDKException's when they fail)
-        try
-        {
+        try {
             $tokenMetadata->validateAppId(\FacebookJSSDK::getAppId());
             $tokenMetadata->validateExpiration();
-        }
-        catch(\Facebook\Exceptions\FacebookSDKException $e)
-        {
+        } catch (\Facebook\Exceptions\FacebookSDKException $e) {
             System::log($e->getMessage(), __METHOD__, TL_ERROR);
+
             return $this->getDefaultRedirect();
         }
 
-        try
-        {
+        try {
             $response = $fb->get('/me?fields=id,name,email,first_name,middle_name,last_name,gender,locale', $accessToken->getValue());
-        }
-        catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             System::log($e->getMessage(), __METHOD__, TL_ERROR);
+
             return $this->getDefaultRedirect();
         }
 
-        $user = $response->getGraphUser();
+        $graphUser = $response->getGraphUser();
 
-        if (!$user)
-        {
+        if (!$graphUser) {
             return $this->getDefaultRedirect();
         }
 
         // save the access token in the session
-        $session->set('facebook_login_access_token', $accessToken->getValue());
+        $this->session->set('facebook_login_access_token', $accessToken->getValue());
 
         // log in the user
-        $blnSuccess = $this->loginUser($user, $objModule);
+        $user = $this->loginUser($graphUser, $module);
 
-        // redirect in case of success
-        return $this->getSuccessRedirect($objModule);
+        // success redirect
+        return $this->getSuccessRedirect($user, $module);
     }
-
 
     /**
      * Logs the user into the Contao frontend.
-     * @param GraphUser $user
-     * @param ModuleModel $objModel
-     * @return boolean
      */
-    protected function loginUser(GraphUser $user, ModuleModel $objModule)
-    {
-        $session = $this->get('session');
-        $time    = time();
-        $db      = $this->get('database_connection');
-
-        // get the data to be saved
-        $arrSaveData = deserialize($objModule->fbLoginData, true);
-
-        // check if users exists
-        $objMember = MemberModel::findByFacebookId($user['id']);
-        if (null === $objMember)
-        {
-            // create username
-            $strUsername = 'fb_'.$user['id'];
-
-            // create a new user
-            $objMember = new MemberModel();
-            $objMember->tstamp = $time;
-            $objMember->dateAdded = $time;
-            $objMember->firstname = \in_array('firstname', $arrSaveData) ? $user['first_name'] . ($user['middle_name'] ? ' ' . $user['middle_name'] : '') : '';
-            $objMember->lastname = \in_array('lastname', $arrSaveData) ? $user['last_name'] : '';
-            $objMember->gender = \in_array('gender', $arrSaveData) ? $user['gender'] : '';
-            $objMember->email = ($user['email'] && \in_array('email', $arrSaveData)) ? $user['email'] : '';
-            $objMember->login = 1;
-            $objMember->username = $strUsername;
-            $objMember->facebookId = $user['id'];
-            $objMember->language = \in_array('locale', $arrSaveData) ? $user['locale'] : '';
-            $objMember->groups = $objModule->reg_groups;
-            $objMember->save();
-        }
-
-        // load the FrontendUser by facebookId
-        $objFrontendUser = FrontendUser::getInstance();
-        $objFrontendUser->findBy('facebookId', $user['id']);
-
-        // check if a frontend user was found
-        if (!$objFrontendUser->id)
-        {
-            throw new \RuntimeException('Error during Facebook login: no FrontendUser instance available.');
-        }
-
-        // check the account status
-        if (!$this->checkAccountStatus())
-        {
-            return false;
-        }
-
-        // Regenerate the session ID to harden against session fixation attacks
-        $strategy = $this->getParameter('security.authentication.session_strategy.strategy');
-        switch ($strategy)
-        {
-            case SessionAuthenticationStrategy::NONE:
-                break;
-
-            case SessionAuthenticationStrategy::MIGRATE:
-                $session->migrate(false); // do not destroy the old session
-                break;
-
-            case SessionAuthenticationStrategy::INVALIDATE:
-                $session->invalidate();
-                break;
-
-            default:
-                throw new \RuntimeException(sprintf('Invalid session authentication strategy "%s"', $strategy));
-        }
-
-        // Update the last login records
-        $objFrontendUser->lastLogin = $objFrontendUser->currentLogin;
-        $objFrontendUser->currentLogin = time();
-        $objFrontendUser->loginCount = Config::get('loginCount');
-        $objFrontendUser->save();
-
-        // get session hash
-        $hash = System::getSessionHash('FE_USER_AUTH');
-
-        // delete old hash
-        $db->delete('tl_session', ['hash' => $hash]);
-
-        // insert the new session
-        $db->insert('tl_session', [
-            'pid' => $objMember->id,
-            'tstamp' => $time,
-            'name' => 'FE_USER_AUTH',
-            'sessionID' => $session->getId(),
-            'ip' => Environment::get('ip'),
-            'hash' => $hash,
-        ]);
-
-        // Set the authentication cookie
-        System::setCookie('FE_USER_AUTH', $hash, ($time + Config::get('sessionTimeout')), null, null, Environment::get('ssl'), true);
-
-        // log
-        System::log('User "' . $objFrontendUser->username . '" has logged in', __METHOD__, TL_ACCESS);
-
-        // Set the auto login data
-        if ($session->get('facebook_login_autologin') && Config::get('autologin') > 0)
-        {
-            $strToken = md5(uniqid(mt_rand(), true));
-
-            $objFrontendUser->createdOn = $time;
-            $objFrontendUser->autologin = $strToken;
-            $objFrontendUser->save();
-
-            System::setCookie('FE_AUTO_LOGIN', $strToken, ($time + Config::get('autologin')), null, null, Environment::get('ssl'), true);
-        }
-
-        $session->remove('facebook_login_autologin');
-
-        // login successful
-        return true;
-    }
-
-
-    /**
-     * Checks the account status.
-     * @return boolean
-     */
-    protected function checkAccountStatus()
+    protected function loginUser(GraphUser $graphUser, ModuleModel $module): FrontendUser
     {
         $time = time();
-        $objFrontendUser = FrontendUser::getInstance();
 
-        // Check whether the account is locked
-        if (($objFrontendUser->locked + Config::get('lockPeriod')) > $time)
-        {
-            Message::addError(sprintf($GLOBALS['TL_LANG']['ERR']['accountLocked'], ceil((($objFrontendUser->locked + Config::get('lockPeriod')) - $time) / 60)));
+        // get the data to be saved
+        $saveData = deserialize($module->fbLoginData, true);
 
-            return false;
+        // check if users exists
+        $member = MemberModel::findByFacebookId($graphUser['id']);
+        if (null === $member) {
+            // create username
+            $username = 'fb_'.$graphUser['id'];
+
+            // create a new user
+            $member = new MemberModel();
+            $member->tstamp = $time;
+            $member->dateAdded = $time;
+            $member->firstname = \in_array('firstname', $saveData, true) ? $graphUser['first_name'].($graphUser['middle_name'] ? ' '.$graphUser['middle_name'] : '') : '';
+            $member->lastname = \in_array('lastname', $saveData, true) ? $graphUser['last_name'] : '';
+            $member->gender = \in_array('gender', $saveData, true) ? $graphUser['gender'] : '';
+            $member->email = ($graphUser['email'] && \in_array('email', $saveData, true)) ? $graphUser['email'] : '';
+            $member->login = 1;
+            $member->username = $username;
+            $member->facebookId = $graphUser['id'];
+            $member->language = \in_array('locale', $saveData, true) ? $graphUser['locale'] : '';
+            $member->groups = $module->reg_groups;
+            $member->save();
         }
 
-        // Check whether the account is disabled
-        elseif ($objFrontendUser->disable)
-        {
-            Message::addError($GLOBALS['TL_LANG']['ERR']['invalidLogin']);
-            System::log('The account has been disabled', __METHOD__, TL_ACCESS);
+        // Get the user
+        $user = $this->userProvider->loadUserByUsername($member->username);
 
-            return false;
-        }
+        // Check pre auth for the user
+        $this->userChecker->checkPreAuth($user);
 
-        // Check wether login is allowed (front end only)
-        elseif ($objFrontendUser instanceof FrontendUser && !$objFrontendUser->login)
-        {
-            Message::addError($GLOBALS['TL_LANG']['ERR']['invalidLogin']);
-            System::log('User "' . $objFrontendUser->username . '" is not allowed to log in', __METHOD__, TL_ACCESS);
+        // Authenticate the user
+        $usernamePasswordToken = new UsernamePasswordToken($user, null, 'frontend', $user->getRoles());
+        $this->tokenStorage->setToken($usernamePasswordToken);
 
-            return false;
-        }
+        $event = new InteractiveLoginEvent($this->request, $usernamePasswordToken);
+        $this->dispatcher->dispatch('security.interactive_login', $event);
 
-        // Check whether account is not active yet or anymore
-        elseif ($objFrontendUser->start != '' || $objFrontendUser->stop != '')
-        {
-            $time = Date::floorToMinute($time);
+        // TODO: set autologin
+        $this->session->remove('facebook_login_autologin');
 
-            if ($objFrontendUser->start != '' && $objFrontendUser->start > $time)
-            {
-                Message::addError($GLOBALS['TL_LANG']['ERR']['invalidLogin']);
-                System::log('The account was not active yet (activation date: ' . Date::parse(Config::get('dateFormat'), $objFrontendUser->start) . ')', __METHOD__, TL_ACCESS);
-
-                return false;
-            }
-
-            if ($objFrontendUser->stop != '' && $objFrontendUser->stop <= ($time + 60))
-            {
-                Message::addError($GLOBALS['TL_LANG']['ERR']['invalidLogin']);
-                System::log('The account was not active anymore (deactivation date: ' . Date::parse(Config::get('dateFormat'), $objFrontendUser->stop) . ')', __METHOD__, TL_ACCESS);
-
-                return false;
-            }
-        }
-
-        return true;
+        // login successful
+        return $user;
     }
 
-
     /**
-     * Returns the Redirect object in case of a successful login
-     * @param ModuleModel $objModule
-     * @return RedirectResponse
+     * Returns the Redirect object in case of a successful login.
      */
-    protected function getSuccessRedirect(ModuleModel $objModule)
+    protected function getSuccessRedirect(FrontendUser $user, ModuleModel $module): RedirectResponse
     {
-        $strRedirect = '';
-        $objFrontendUser = FrontendUser::getInstance();
+        $redirectUrl = '';
 
         // Make sure that groups is an array
-        if (!is_array($objFrontendUser->groups))
-        {
-            $objFrontendUser->groups = ($objFrontendUser->groups != '') ? array($objFrontendUser->groups) : array();
+        if (!\is_array($user->groups)) {
+            $user->groups = ('' !== $user->groups) ? [$user->groups] : [];
         }
 
         // Skip inactive groups
-        if (($objGroups = MemberGroupModel::findAllActive()) !== null)
-        {
-            $objFrontendUser->groups = array_intersect($objFrontendUser->groups, $objGroups->fetchEach('id'));
+        if (null !== ($objGroups = MemberGroupModel::findAllActive())) {
+            $user->groups = array_intersect($user->groups, $objGroups->fetchEach('id'));
         }
 
-        if (!empty($objFrontendUser->groups) && is_array($objFrontendUser->groups))
-        {
-            $objGroupPage = PageModel::findFirstActiveByMemberGroups($objFrontendUser->groups);
-
-            if (null !== $objGroupPage)
-            {
-                $strRedirect = $objGroupPage->getAbsoluteUrl();
+        if (!empty($user->groups) && \is_array($user->groups)) {
+            if (null !== ($groupPage = PageModel::findFirstActiveByMemberGroups($user->groups))) {
+                $redirectUrl = $groupPage->getAbsoluteUrl();
             }
         }
 
-        if (!$strRedirect && null !== $objModule)
-        {
-            if ($objModule->redirectBack && $_SESSION['LAST_PAGE_VISITED'] != '')
-            {
-                $strRedirect = $_SESSION['LAST_PAGE_VISITED'];
-            }
-            elseif ($objModule->jumpTo && null !== ($objRedirect = PageModel::findById($objModule->jumpTo)))
-            {
-                $strRedirect = $objRedirect->getAbsoluteUrl();
+        if (!$redirectUrl && null !== $module) {
+            if ($module->redirectBack && '' !== $_SESSION['LAST_PAGE_VISITED']) {
+                $redirectUrl = $_SESSION['LAST_PAGE_VISITED'];
+            } elseif ($module->jumpTo && null !== ($redirectPage = PageModel::findById($module->jumpTo))) {
+                $redirectUrl = $redirectPage->getAbsoluteUrl();
             }
         }
 
-        if ($strRedirect)
-        {
-            return new RedirectResponse($strRedirect);
+        if ($redirectUrl) {
+            return new RedirectResponse($redirectUrl);
         }
-        else
-        {
-            return $this->getDefaultRedirect();
-        }
+
+        return $this->getDefaultRedirect();
     }
 
-
     /**
-     * Returns the default Redirect object, depending on session variables
-     * @return RedirectResponse
+     * Returns the default Redirect object, depending on session variables.
      */
-    protected function getDefaultRedirect()
+    protected function getDefaultRedirect(): RedirectResponse
     {
-        $session = $this->get('session');
-        $request = $this->get('request_stack')->getCurrentRequest();
+        if ($this->session->has('facebook_login_referrer')) {
+            $url = $this->session->get('facebook_login_referrer');
+            $this->session->remove('facebook_login_referrer');
 
-        if ($session->has('facebook_login_referrer'))
-        {
-            $url = $session->get('facebook_login_referrer');
-            $session->remove('facebook_login_referrer');
             return new RedirectResponse($url);
         }
-        else
-        {
-            return new RedirectResponse($request->getScheme() . '://' . $request->getHost() . ($this->get('kernel')->isDebug() ? '/app_dev.php/' : ''));
-        }
+
+        return new RedirectResponse($this->request->getScheme().'://'.$this->request->getHost().('dev' === $this->environment ? '/app_dev.php/' : ''));
     }
 }
