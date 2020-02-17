@@ -3,7 +3,7 @@
     "description":"Contao 4 bundle for a Facebook login.",
     "keywords":["contao", "facebook", "login"],
     "type":"contao-bundle",
-    "homepage":"http://www.inspiredminds.at",
+    "homepage":"https://github.com/inspiredminds/contao-facebook-login",
     "license":"LGPL-3.0-or-later",
     "authors":[
         {
