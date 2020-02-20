@@ -24,6 +24,7 @@ use Contao\PageModel;
 use Contao\System;
 use Facebook\GraphNodes\GraphUser;
 use FacebookLoginBundle\Facebook\FacebookFactory;
+use FacebookLoginBundle\Modules\ModuleFacebookLogin;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -204,6 +205,8 @@ class CallbackController implements FrameworkAwareInterface
             $member->language = \in_array('locale', $saveData, true) ? $graphUser['locale'] : '';
             $member->groups = $module->reg_groups;
             $member->save();
+
+            $this->triggerCreateNewUserHook($member, $module);
         }
 
         // Get the user
@@ -277,5 +280,20 @@ class CallbackController implements FrameworkAwareInterface
         }
 
         return new RedirectResponse($this->request->getScheme().'://'.$this->request->getHost().('dev' === $this->environment ? '/app_dev.php/' : ''));
+    }
+
+    /**
+     * Triggers the createNewUser hook
+     */
+    private function triggerCreateNewUserHook(MemberModel $member, ModuleModel $moduleModel): void
+    {
+        $module = new ModuleFacebookLogin($moduleModel);
+
+        if (isset($GLOBALS['TL_HOOKS']['createNewUser']) && \is_array($GLOBALS['TL_HOOKS']['createNewUser'])) {
+            foreach ($GLOBALS['TL_HOOKS']['createNewUser'] as $callback) {
+                $callback[0] = System::importStatic($callback[0]);
+                $callback[0]->{$callback[1]}($member->id, $member->row(), $module);
+            }
+        }
     }
 }
