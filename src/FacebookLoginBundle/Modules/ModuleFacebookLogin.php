@@ -74,7 +74,7 @@ class ModuleFacebookLogin extends Module
         $session = System::getContainer()->get('session');
 
         // Login
-        if (Input::post('FORM_SUBMIT') === 'tl_login_'.$this->id) {
+        if (Input::post('FORM_SUBMIT') === 'tl_facebook_login_'.$this->id) {
             // Get the login data to be retrieved
             $this->fbLoginData = deserialize($this->fbLoginData, true);
 
@@ -111,7 +111,7 @@ class ModuleFacebookLogin extends Module
         }
 
         // Logout and redirect to the website root if the current page is protected
-        if (Input::post('FORM_SUBMIT') === 'tl_logout_'.$this->id) {
+        if (Input::post('FORM_SUBMIT') === 'tl_facebook_logout_'.$this->id) {
             // Remove access token
             $session->remove('facebook_login_access_token');
 
@@ -152,7 +152,7 @@ class ModuleFacebookLogin extends Module
             $strName = \implode(' ', \array_filter([$objMember->firstname, $objMember->lastname])) ?: $objMember->username;
 
             $this->Template->logout = true;
-            $this->Template->formId = 'tl_logout_'.$this->id;
+            $this->Template->formId = 'tl_facebook_logout_'.$this->id;
             $this->Template->slabel = StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['logout']);
             $this->Template->loggedInAs = sprintf($GLOBALS['TL_LANG']['MSC']['loggedInAs'], $strName);
             $this->Template->action = ampersand(Environment::get('indexFreeRequest'));
@@ -182,7 +182,7 @@ class ModuleFacebookLogin extends Module
         $this->Template->action = ampersand(Environment::get('indexFreeRequest'));
         $this->Template->slabel = StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['facebookLogin']);
         $this->Template->value = StringUtil::specialchars(Input::post('username'));
-        $this->Template->formId = 'tl_login_'.$this->id;
+        $this->Template->formId = 'tl_facebook_login_'.$this->id;
         $this->Template->autologin = ($this->autologin && Config::get('autologin') > 0);
         $this->Template->autoLabel = $GLOBALS['TL_LANG']['MSC']['autologin'];
     }
