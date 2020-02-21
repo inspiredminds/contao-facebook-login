@@ -15,23 +15,21 @@ namespace FacebookLoginBundle\Modules;
 use Contao\Config;
 use Contao\Controller;
 use Contao\Environment;
-use Contao\FormCaptcha;
-use Contao\FormPassword;
 use Contao\FrontendUser;
 use Contao\Input;
 use Contao\MemberModel;
-use Contao\Message;
 use Contao\PageModel;
-use Contao\Password;
 use Contao\StringUtil;
 use Contao\System;
 use Contao\Versions;
 use Contao\Widget;
+use Facebook\Exceptions\FacebookSDKException;
 use FacebookLoginBundle\Facebook\FacebookFactory;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use function ampersand;
 use function sprintf;
 use function time;
+use const TL_ERROR;
 
 class ModuleFacebookConnect extends AbstractFacebookModule
 {
@@ -130,7 +128,20 @@ class ModuleFacebookConnect extends AbstractFacebookModule
         $facebook = (new FacebookFactory())->create();
 
         // Ignore if it was successful. Assume that the user revoked access manually
-        $facebook->delete($endpoint, [], $session->get('facebook_login_access_token'));
+        try {
+            $facebook->delete($endpoint, [], $session->get('facebook_login_access_token'));
+        } catch (FacebookSDKException $e) {
+            System::log(
+                sprintf(
+                    'Revoke remote facebook connection for user "%s" failed with message "%s (%s)"',
+                    $objMember->username,
+                    $objMember->id,
+                    $e->getMessage()
+                ),
+                __METHOD__,
+                TL_ERROR
+            );
+        }
 
         // Remove access token
         $session->remove('facebook_login_access_token');
