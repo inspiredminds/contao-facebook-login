@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace FacebookLoginBundle\Modules;
 
+use Contao\BackendTemplate;
 use Contao\Controller;
+use Contao\Environment;
 use Contao\Input;
 use Contao\Module;
 use Contao\StringUtil;
@@ -20,9 +22,40 @@ use Contao\System;
 use FacebookLoginBundle\Facebook\FacebookFactory;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use function deserialize;
+use function utf8_strtoupper;
+use const TL_MODE;
 
 abstract class AbstractFacebookModule extends Module
 {
+    public function generate(): string
+    {
+        if (TL_MODE === 'BE') {
+            $objTemplate = new BackendTemplate('be_wildcard');
+
+            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD'][$this->type][0]).' ###';
+            $objTemplate->title = $this->headline;
+            $objTemplate->id = $this->id;
+            $objTemplate->link = $this->name;
+            $objTemplate->href = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id='.$this->id;
+
+            return $objTemplate->parse();
+        }
+
+        // Return if a front end user is logged in or there is no valid Facebook APP config
+        if (!\FacebookJSSDK::hasValidConfig()) {
+            return '';
+        }
+
+        // Set the last page visited (see #8632)
+        if (!$_POST && $this->redirectBack && ($strReferer = System::getReferer()) !== Environment::get('request')) {
+            $_SESSION['LAST_PAGE_VISITED'] = $strReferer;
+        }
+
+        $this->handleSubmit();
+
+        return parent::generate();
+    }
+
     protected function handleLoginForm() : void
     {
         if (Input::post('FORM_SUBMIT') !== 'tl_facebook_login_'.$this->id) {
@@ -65,4 +98,6 @@ abstract class AbstractFacebookModule extends Module
 
         Controller::redirect($loginUrl);
     }
+
+    abstract protected function handleSubmit(): void;
 }

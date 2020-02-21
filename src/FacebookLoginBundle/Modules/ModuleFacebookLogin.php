@@ -38,43 +38,16 @@ class ModuleFacebookLogin extends AbstractFacebookModule
      */
     protected $strFlashType = 'contao.'.TL_MODE.'.error';
 
-    /**
-     * Display a wildcard in the back end.
-     *
-     * @return string
-     */
-    public function generate()
+    protected function handleSubmit() : void
     {
-        if (TL_MODE === 'BE') {
-            $objTemplate = new BackendTemplate('be_wildcard');
-
-            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD']['facebook_login'][0]).' ###';
-            $objTemplate->title = $this->headline;
-            $objTemplate->id = $this->id;
-            $objTemplate->link = $this->name;
-            $objTemplate->href = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id='.$this->id;
-
-            return $objTemplate->parse();
-        }
-
-        // Return if a front end user is logged in or there is no valid Facebook APP config
-        if (!\FacebookJSSDK::hasValidConfig()) {
-            return '';
-        }
-
-        // Set the last page visited (see #8632)
-        if (!$_POST && $this->redirectBack && ($strReferer = System::getReferer()) !== Environment::get('request')) {
-            $_SESSION['LAST_PAGE_VISITED'] = $strReferer;
-        }
-
-        // Get the session
-        $session = System::getContainer()->get('session');
-
         // Login
         $this->handleLoginForm();
 
         // Logout and redirect to the website root if the current page is protected
         if (Input::post('FORM_SUBMIT') === 'tl_facebook_logout_'.$this->id) {
+            // Get the session
+            $session = System::getContainer()->get('session');
+
             // Remove access token
             $session->remove('facebook_login_access_token');
 
@@ -99,8 +72,6 @@ class ModuleFacebookLogin extends AbstractFacebookModule
                 Controller::redirect($strRedirect);
             }
         }
-
-        return parent::generate();
     }
 
     /**
