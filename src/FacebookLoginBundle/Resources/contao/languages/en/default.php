@@ -13,3 +13,4 @@
 
 
 $GLOBALS['TL_LANG']['MSC']['facebookLogin'] = 'Login with Facebook';
+$GLOBALS['TL_LANG']['MSC']['facebookDisconnect'] = 'Disconnect Facebook account';

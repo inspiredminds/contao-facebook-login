@@ -13,3 +13,4 @@
 
 
 $GLOBALS['TL_LANG']['FMD']['facebook_login'] = array('Facebook Login', 'Erlauben Sie den Benutzern sich mit ihrem Facebook Konto anzumelden.');
+$GLOBALS['TL_LANG']['FMD']['facebook_connect'] = array('Facebook Konto verbinden', 'Erlauben Sie den Benutzern ihr Facebook Konto mit ihrem Benutzeraccount zu verbinden/zu trennen.');

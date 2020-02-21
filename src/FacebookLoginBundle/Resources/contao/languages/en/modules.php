@@ -13,3 +13,4 @@
 
 
 $GLOBALS['TL_LANG']['FMD']['facebook_login'] = array('Facebook login', 'Allow your users to login through Facebook.');
+$GLOBALS['TL_LANG']['FMD']['facebook_connect'] = array('Facebook connect', 'Allow your users to connect/disconnect their Facebook account with the user account.');

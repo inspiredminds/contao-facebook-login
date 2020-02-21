@@ -19,6 +19,10 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = str_replace('{re
 $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = str_replace(',autologin', ',fbLoginData,fbLoginPerms', $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login']);
 $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = str_replace(',cols,', ',', $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login']);
 
+$GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_connect'] = $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'];
+\Contao\CoreBundle\DataContainer\PaletteManipulator::create()
+    ->removeField('reg_groups')
+    ->applyToPalette('facebook_connect', 'tl_module');
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['fbLoginData'] = array
 (

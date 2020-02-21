@@ -15,8 +15,8 @@
 /**
  * Front end modules
  */
-$GLOBALS['FE_MOD']['user']['facebook_login'] = 'FacebookLoginBundle\Modules\ModuleFacebookLogin';
-
+$GLOBALS['FE_MOD']['user']['facebook_login'] = \FacebookLoginBundle\Modules\ModuleFacebookLogin::class;
+$GLOBALS['FE_MOD']['user']['facebook_connect'] = \FacebookLoginBundle\Modules\ModuleFacebookConnect::class;
 
 /**
  * Remove #_=_
