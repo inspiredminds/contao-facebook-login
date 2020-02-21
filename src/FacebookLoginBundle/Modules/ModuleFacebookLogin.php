@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace FacebookLoginBundle\Modules;
 
-use Contao\BackendTemplate;
 use Contao\Config;
 use Contao\Controller;
 use Contao\Environment;
@@ -30,13 +29,6 @@ class ModuleFacebookLogin extends AbstractFacebookModule
      * @var string
      */
     protected $strTemplate = 'mod_facebook_login';
-
-    /**
-     * Flash type.
-     *
-     * @var string
-     */
-    protected $strFlashType = 'contao.'.TL_MODE.'.error';
 
     protected function handleSubmit() : void
     {

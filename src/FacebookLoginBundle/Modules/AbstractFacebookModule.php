@@ -20,19 +20,25 @@ use Contao\Module;
 use Contao\StringUtil;
 use Contao\System;
 use FacebookLoginBundle\Facebook\FacebookFactory;
+use Patchwork\Utf8;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use function deserialize;
-use function utf8_strtoupper;
 use const TL_MODE;
 
 abstract class AbstractFacebookModule extends Module
 {
+    /**
+     * Flash type.
+     *
+     * @var string
+     */
+    protected $strFlashType = 'contao.'.TL_MODE.'.error';
+
     public function generate(): string
     {
         if (TL_MODE === 'BE') {
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD'][$this->type][0]).' ###';
+            $objTemplate->wildcard = '### '.Utf8::strtoupper($GLOBALS['TL_LANG']['FMD'][$this->type][0]).' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
@@ -65,7 +71,7 @@ abstract class AbstractFacebookModule extends Module
         $session = System::getContainer()->get('session');
 
         // Get the login data to be retrieved
-        $this->fbLoginData = deserialize($this->fbLoginData, true);
+        $this->fbLoginData = StringUtil::deserialize($this->fbLoginData, true);
 
         // Prepare the facebook permissions
         $permissions = ['public_profile'];
