@@ -150,7 +150,7 @@ class ModuleFacebookConnect extends AbstractFacebookModule
         $objVersions = new Versions('tl_member', $objMember->id);
         $objVersions->setUsername($objMember->username);
         $objVersions->setUserId(0);
-        $objVersions->setEditUrl('contao/main.php?do=member&act=edit&id=%s&rt=1');
+        $objVersions->setEditUrl('contao?do=member&act=edit&id=%s&rt=1');
         $objVersions->initialize();
 
         $memberModel = MemberModel::findByPk($objMember->id);
