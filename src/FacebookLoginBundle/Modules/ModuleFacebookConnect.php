@@ -40,6 +40,7 @@ class ModuleFacebookConnect extends AbstractFacebookModule
 
     protected function handleSubmit() : void
     {
+        $this->createWidgets(FrontendUser::getInstance());
         $this->handleLoginForm();
         $this->handleDisconnectForm();
     }
@@ -74,9 +75,10 @@ class ModuleFacebookConnect extends AbstractFacebookModule
         $this->Template->action = ampersand(Environment::get('indexFreeRequest'));
 
         if ($connected) {
-            $this->Template->disconnect = true;
+            $this->Template->connected = true;
             $this->Template->formId = 'tl_facebook_disconnect_'.$this->id;
             $this->Template->slabel = StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['facebookDisconnect']);
+            $this->Template->widgets = $this->widgets;
 
             if ($objMember->lastLogin > 0) {
                 /* @var PageModel $objPage */
@@ -88,7 +90,6 @@ class ModuleFacebookConnect extends AbstractFacebookModule
             return;
         }
 
-        $this->Template->widgets = $this->widgets;
         $this->Template->slabel = StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['facebookLogin']);
         $this->Template->value = StringUtil::specialchars(Input::post('username'));
         $this->Template->formId = 'tl_facebook_login_'.$this->id;
@@ -106,8 +107,6 @@ class ModuleFacebookConnect extends AbstractFacebookModule
         if ($objMember->facebookId === '') {
             return;
         }
-
-        $this->createDisconnectWidgets($objMember);
 
         $doNotSubmit = false;
         foreach ($this->widgets as $widget) {
@@ -172,8 +171,12 @@ class ModuleFacebookConnect extends AbstractFacebookModule
         Controller::redirect($strRedirect);
     }
 
-    private function createDisconnectWidgets(FrontendUser $objMember): void
+    private function createWidgets(FrontendUser $objMember): void
     {
+        if (! $objMember->facebookId) {
+            return;
+        }
+
         if ($objMember->password === '') {
             Controller::loadDataContainer('tl_member');
 
