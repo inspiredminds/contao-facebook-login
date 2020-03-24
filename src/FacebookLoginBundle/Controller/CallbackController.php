@@ -226,6 +226,8 @@ class CallbackController implements FrameworkAwareInterface
                     $member->save();
 
                     $objVersions->create(true);
+
+                    return $user;
                 }
             }
         }
