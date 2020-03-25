@@ -13,3 +13,4 @@
 
 
 $GLOBALS['TL_LANG']['MSC']['facebookLogin'] = 'Anmelden mit Facebook';
+$GLOBALS['TL_LANG']['MSC']['facebookDisconnect'] = 'Facebook Konto trennen';

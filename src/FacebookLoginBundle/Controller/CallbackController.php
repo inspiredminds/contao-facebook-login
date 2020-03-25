@@ -22,6 +22,7 @@ use Contao\MemberModel;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\System;
+use Contao\Versions;
 use Facebook\GraphNodes\GraphUser;
 use FacebookLoginBundle\Facebook\FacebookFactory;
 use FacebookLoginBundle\Modules\ModuleFacebookLogin;
@@ -207,6 +208,28 @@ class CallbackController implements FrameworkAwareInterface
             $member->save();
 
             $this->triggerCreateNewUserHook($member, $module);
+        } else {
+            // Check if user is already logged in
+            $token = $this->tokenStorage->getToken();
+            if (null !== $token) {
+                $user = $token->getUser();
+                if ($user instanceof FrontendUser) {
+                    // Initialize the versioning (see #8301)
+                    $objVersions = new Versions('tl_member', $user->id);
+                    $objVersions->setUsername($user->username);
+                    $objVersions->setUserId(0);
+                    $objVersions->setEditUrl('contao?do=member&act=edit&id=%s&rt=1');
+                    $objVersions->initialize();
+
+                    $member = MemberModel::findByPk($user->id);
+                    $member->facebookId = $graphUser['id'];
+                    $member->save();
+
+                    $objVersions->create(true);
+
+                    return $user;
+                }
+            }
         }
 
         // Get the user
