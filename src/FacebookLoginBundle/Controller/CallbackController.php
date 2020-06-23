@@ -144,7 +144,7 @@ class CallbackController implements FrameworkAwareInterface
 
         // Validation (these will throw FacebookSDKException's when they fail)
         try {
-            $tokenMetadata->validateAppId(strval(\FacebookJSSDK::getAppId()));
+            $tokenMetadata->validateAppId((string) \FacebookJSSDK::getAppId());
             $tokenMetadata->validateExpiration();
         } catch (\Facebook\Exceptions\FacebookSDKException $e) {
             System::log($e->getMessage(), __METHOD__, TL_ERROR);
