@@ -201,7 +201,7 @@ class CallbackController implements FrameworkAwareInterface
             $member->gender = \in_array('gender', $saveData, true) ? $graphUser['gender'] : '';
             $member->email = ($graphUser['email'] && \in_array('email', $saveData, true)) ? $graphUser['email'] : '';
             $member->login = 1;
-            $member->username = $username;
+            $member->username = ($graphUser['email'] && \in_array('email', $saveData, true)) ? $graphUser['email'] : $username;
             $member->facebookId = $graphUser['id'];
             $member->language = \in_array('locale', $saveData, true) ? $graphUser['locale'] : '';
             $member->groups = $module->reg_groups;
