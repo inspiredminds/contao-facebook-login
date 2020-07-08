@@ -186,9 +186,14 @@ class CallbackController implements FrameworkAwareInterface
         // get the data to be saved
         $saveData = deserialize($module->fbLoginData, true);
 
-        // check if users exists
+        // check if fb users exists
         $member = MemberModel::findByFacebookId($graphUser['id']);
-        if (null === $member) {
+
+        // check if user with facebook email already exists
+        $alreadyMember = MemberModel::findByEmail($graphUser['email']);
+        
+        if (null === $member && null == $alreadyMember) { 
+            
             // create username
             $username = 'fb_'.$graphUser['id'];
 
@@ -233,7 +238,15 @@ class CallbackController implements FrameworkAwareInterface
         }
 
         // Get the user
-        $user = $this->userProvider->loadUserByUsername($member->username);
+        if($alreadyMember) {
+            if($alreadyMember->facebookId == '') {
+                $alreadyMember->facebookId = $graphUser['id'];
+                $alreadyMember->save();   
+            }
+            $user = $this->userProvider->loadUserByUsername($alreadyMember->username);
+        } else {
+            $user = $this->userProvider->loadUserByUsername($member->username);
+        }
 
         // Check pre auth for the user
         $this->userChecker->checkPreAuth($user);
