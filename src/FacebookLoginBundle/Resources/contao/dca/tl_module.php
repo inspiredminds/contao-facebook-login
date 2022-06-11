@@ -11,18 +11,29 @@
  * @copyright inspiredminds 2017
  */
 
+use Contao\CoreBundle\DataContainer\PaletteManipulator;
 use Contao\StringUtil;
 
-
+// Copy existing "login" palette and adjust
 $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = $GLOBALS['TL_DCA']['tl_module']['palettes']['login'];
-$GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = str_replace('{redirect_legend', '{account_legend},reg_groups;{redirect_legend', $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login']);
-$GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = str_replace(',autologin', ',fbLoginData,fbLoginPerms', $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login']);
-$GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'] = str_replace(',cols,', ',', $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login']);
 
+PaletteManipulator::create()
+    ->addLegend('account_legend', 'redirect_legend', PaletteManipulator::POSITION_BEFORE)
+    ->addField('reg_groups', 'account_legend', PaletteManipulator::POSITION_APPEND)
+    ->addField('fbLoginData', 'config_legend', PaletteManipulator::POSITION_APPEND)
+    ->addField('fbLoginPerms', 'config_legend', PaletteManipulator::POSITION_APPEND)
+    ->removeField('autologin')
+    ->removeField('cols')
+    ->applyToPalette('facebook_login', 'tl_module')
+;
+
+// Copy existing "facebook_login" palette and adjust
 $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_connect'] = $GLOBALS['TL_DCA']['tl_module']['palettes']['facebook_login'];
-\Contao\CoreBundle\DataContainer\PaletteManipulator::create()
+
+PaletteManipulator::create()
     ->removeField('reg_groups')
-    ->applyToPalette('facebook_connect', 'tl_module');
+    ->applyToPalette('facebook_connect', 'tl_module')
+;
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['fbLoginData'] = array
 (

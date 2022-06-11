@@ -62,7 +62,7 @@ abstract class AbstractFacebookModule extends Module
         return parent::generate();
     }
 
-    protected function handleLoginForm() : void
+    protected function handleLoginForm(): void
     {
         if (Input::post('FORM_SUBMIT') !== 'tl_facebook_login_'.$this->id) {
             return;
@@ -82,7 +82,7 @@ abstract class AbstractFacebookModule extends Module
         }
 
         // Get the custom permissions
-        $permissions = \array_filter(\array_unique(\array_merge($permissions, StringUtil::splitCsv($this->fbLoginPerms))));
+        $permissions = array_filter(array_unique(array_merge($permissions, StringUtil::splitCsv($this->fbLoginPerms))));
 
         // Auto login
         if (isset($_POST['autologin']) && $this->autologin) {

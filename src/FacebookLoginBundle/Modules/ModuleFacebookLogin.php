@@ -30,7 +30,7 @@ class ModuleFacebookLogin extends AbstractFacebookModule
      */
     protected $strTemplate = 'mod_facebook_login';
 
-    protected function handleSubmit() : void
+    protected function handleSubmit(): void
     {
         // Login
         $this->handleLoginForm();
@@ -75,7 +75,7 @@ class ModuleFacebookLogin extends AbstractFacebookModule
         if (FE_USER_LOGGED_IN) {
             $objMember = FrontendUser::getInstance();
 
-            $strName = \implode(' ', \array_filter([$objMember->firstname, $objMember->lastname])) ?: $objMember->username;
+            $strName = implode(' ', array_filter([$objMember->firstname, $objMember->lastname])) ?: $objMember->username;
 
             $this->Template->logout = true;
             $this->Template->formId = 'tl_facebook_logout_'.$this->id;

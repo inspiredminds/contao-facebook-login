@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace FacebookLoginBundle\Modules;
 
+use function ampersand;
 use Contao\Config;
 use Contao\Controller;
 use Contao\Environment;
@@ -25,9 +26,8 @@ use Contao\Versions;
 use Contao\Widget;
 use Facebook\Exceptions\FacebookSDKException;
 use FacebookLoginBundle\Facebook\FacebookFactory;
-use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use function ampersand;
 use function sprintf;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use function time;
 use const TL_ERROR;
 
@@ -38,7 +38,7 @@ class ModuleFacebookConnect extends AbstractFacebookModule
     /** @var Widget[] */
     protected $widgets = [];
 
-    protected function handleSubmit() : void
+    protected function handleSubmit(): void
     {
         $this->createWidgets(FrontendUser::getInstance());
         $this->handleLoginForm();
@@ -55,7 +55,7 @@ class ModuleFacebookConnect extends AbstractFacebookModule
             $connected = false;
         } else {
             $objMember = FrontendUser::getInstance();
-            $connected = $objMember->facebookId !== '';
+            $connected = '' !== $objMember->facebookId;
         }
 
         $session = System::getContainer()->get('session');
@@ -70,7 +70,7 @@ class ModuleFacebookConnect extends AbstractFacebookModule
             }
         }
 
-        $strName = \implode(' ', \array_filter([$objMember->firstname, $objMember->lastname])) ?: $objMember->username;
+        $strName = implode(' ', array_filter([$objMember->firstname, $objMember->lastname])) ?: $objMember->username;
         $this->Template->loggedInAs = sprintf($GLOBALS['TL_LANG']['MSC']['loggedInAs'], $strName);
         $this->Template->action = ampersand(Environment::get('indexFreeRequest'));
 
@@ -81,9 +81,9 @@ class ModuleFacebookConnect extends AbstractFacebookModule
             $this->Template->widgets = $this->widgets;
 
             if ($objMember->lastLogin > 0) {
-                /* @var PageModel $objPage */
                 global $objPage;
 
+                /** @var PageModel $objPage */
                 $this->Template->lastLogin = sprintf($GLOBALS['TL_LANG']['MSC']['lastLogin'][1], \Date::parse($objPage->datimFormat, $objMember->lastLogin));
             }
 
@@ -97,14 +97,14 @@ class ModuleFacebookConnect extends AbstractFacebookModule
         $this->Template->autoLabel = $GLOBALS['TL_LANG']['MSC']['autologin'];
     }
 
-    private function handleDisconnectForm() : void
+    private function handleDisconnectForm(): void
     {
         if (Input::post('FORM_SUBMIT') !== 'tl_facebook_disconnect_'.$this->id) {
             return;
         }
 
         $objMember = FrontendUser::getInstance();
-        if ($objMember->facebookId === '') {
+        if ('' === $objMember->facebookId) {
             return;
         }
 
@@ -122,7 +122,7 @@ class ModuleFacebookConnect extends AbstractFacebookModule
         }
 
         // Get the session
-        $session  = System::getContainer()->get('session');
+        $session = System::getContainer()->get('session');
         $endpoint = sprintf('%s/permissions', $objMember->facebookId);
         $facebook = (new FacebookFactory())->create();
 
@@ -173,11 +173,11 @@ class ModuleFacebookConnect extends AbstractFacebookModule
 
     private function createWidgets(FrontendUser $objMember): void
     {
-        if (! $objMember->facebookId) {
+        if (!$objMember->facebookId) {
             return;
         }
 
-        if ($objMember->password === '') {
+        if ('' === $objMember->password) {
             Controller::loadDataContainer('tl_member');
 
             /** @var Widget $strClass */
@@ -193,8 +193,7 @@ class ModuleFacebookConnect extends AbstractFacebookModule
             $this->widgets['password'] = $passwordWidget;
 
             // Captcha widget
-            if (!$this->disableCaptcha)
-            {
+            if (!$this->disableCaptcha) {
                 /** @var Widget $strClass */
                 $strClass = $GLOBALS['TL_FFL']['captcha'];
 
@@ -203,7 +202,7 @@ class ModuleFacebookConnect extends AbstractFacebookModule
                         'name' => 'lost_password',
                         'label' => $GLOBALS['TL_LANG']['MSC']['securityQuestion'],
                         'inputType' => 'captcha',
-                        'eval' => ['mandatory' =>true]
+                        'eval' => ['mandatory' => true],
                     ],
                     'captcha'
                 ));

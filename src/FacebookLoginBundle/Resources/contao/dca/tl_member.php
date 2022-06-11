@@ -11,11 +11,15 @@
  * @copyright inspiredminds 2017
  */
 
+use Contao\CoreBundle\DataContainer\PaletteManipulator;
 
 /**
  * Add palettes to tl_member
  */
-$GLOBALS['TL_DCA']['tl_member']['subpalettes']['login'] = str_replace('username,', 'username,facebookId,', $GLOBALS['TL_DCA']['tl_member']['subpalettes']['login']);
+PaletteManipulator::create()
+	->addField('facebookId', 'username')
+	->applyToSubpalette('login', 'tl_member')
+;
 
 
 /**

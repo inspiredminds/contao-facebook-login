@@ -306,7 +306,7 @@ class CallbackController implements FrameworkAwareInterface
     }
 
     /**
-     * Triggers the createNewUser hook
+     * Triggers the createNewUser hook.
      */
     private function triggerCreateNewUserHook(MemberModel $member, ModuleModel $moduleModel): void
     {
